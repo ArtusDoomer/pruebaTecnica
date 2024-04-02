@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de Moneda por Año Específico</title>
+	<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+    <h1>Consulta de Moneda por Año Específico</h1>
+    <form id="yearForm" action="/currency/year" method="get">
+        <label for="moneda">Seleccione una moneda:</label>
+        <select id="moneda" name="nombre">
+            <option value="uf">UF</option>
+            <option value="ivp">IVP</option>
+            <option value="dolar">Dólar</option>
+            <option value="dolar_intercambio">Dólar Intercambio</option>
+            <option value="euro">Euro</option>
+            <option value="ipc">IPC</option>
+            <option value="utm">UTM</option>
+            <option value="tpm">TPM</option>
+            <option value="bitcoin">Bitcoin</option>
+        </select>
+        <br>
+        <label for="year">Ingrese un año:</label>
+        <input type="text" id="yearInput" name="year" placeholder="YYYY">
+        <br>
+        <button type="submit">Consultar</button>
+    </form>
+	<script>
+	        function consultarMoneda() {
+	            var moneda = document.getElementById('moneda').value;
+	            var año = document.getElementById('yearInput').value;
+	
+	            // Realizar la solicitud a la APIRest
+	            fetch('/currency/year?nombre=' + moneda + '&year=' + año)
+	                .then(response => response.json())
+	                .then(data => {
+	                    // Calcular el promedio y el porcentaje de variación para cada mes
+	                    var promedioPorMes = {};
+	                    var porcentajeVariacionPorMes = {};
+	                    var meses = {};
+	                   
+	                    for (var i = 1; i <= 12; i++) {
+	                        promedioPorMes[i] = 0;
+	                        porcentajeVariacionPorMes[i] = 0;
+	                        meses[i] = 0;
+	                    }
+	                    // Calcular el promedio del valor de cada mes
+	                    data.forEach(function(registro) {
+	                        var fecha = new Date(registro.fecha);
+	                        var mes = fecha.getMonth() + 1; // Los meses van de 0 a 11
+	                        promedioPorMes[mes] += registro.valor;
+	                        meses[mes]++;
+	                    });
+	
+	                    // Calcular el promedio y el porcentaje de variación
+	                    for (var mes = 1; mes <= 12; mes++) {
+	                        promedioPorMes[mes] /= meses[mes];
+	                        porcentajeVariacionPorMes[mes] = ((promedioPorMes[mes] - promedioPorMes[mes - 1]) / promedioPorMes[mes - 1]) * 100;
+	                    }
+	
+	                    // Mostrar los resultados en el HTML
+	                    var resultadoHTML = "<h2>Promedio y Porcentaje de Variación por Mes</h2>";
+	                    resultadoHTML += "<table><tr><th>Mes</th><th>Promedio</th><th>Porcentaje de Variación</th></tr>";
+	                    for (var mes = 1; mes <= 12; mes++) {
+	                        resultadoHTML += "<tr><td>" + mes + "</td><td>" + promedioPorMes[mes].toFixed(2) + "</td><td>" + porcentajeVariacionPorMes[mes].toFixed(2) + "%</td></tr>";
+	                    }
+	                    resultadoHTML += "</table>";
+	                    document.getElementById('resultado').innerHTML = resultadoHTML;
+	                })
+	                .catch(error => {
+	                    console.error('Error al consultar la moneda:', error);
+	                    alert('Error al consultar la moneda.');
+	                });
+	        }
+	    </script>
+</body>
+</html>

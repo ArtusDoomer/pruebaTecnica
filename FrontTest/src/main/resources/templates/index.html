@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de Moneda</title>
+    <link rel="stylesheet" href="estilos.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Consulta de Moneda</h1>
+    <form id="currencyForm" action="/currency" method="get">
+        <label for="moneda">Seleccione una moneda:</label>
+        <select id="moneda" name="nombre">
+            <option value="uf">UF</option>
+            <option value="ivp">IVP</option>
+            <option value="dolar">Dólar</option>
+            <option value="dolar_intercambio">Dólar Intercambio</option>
+            <option value="euro">Euro</option>
+            <option value="ipc">IPC</option>
+            <option value="utm">UTM</option>
+            <option value="tpm">TPM</option>
+            <option value="bitcoin">Bitcoin</option>
+        </select>
+        <br>
+        <label for="fecha">Ingrese una fecha (dd-MM-yyyy):</label>
+        <input type="text" id="valorAnterior" name="fecha" placeholder="dd-MM-yyyy">
+        <button type="button" onclick="consultarMoneda()">Consultar</button>
+    </form>
+    <div id="resultado"></div>
+
+    <a href="/year-month">Consultar por Año y Mes</a><br>
+    <a href="/year">Consultar por Año Específico</a>
+
+    <div id="errorMessage" style="color: red;"></div>
+
+    <div th:if="${currencyInfo != null}" th:text="${currencyInfo}"></div>
+
+    <script>
+        function consultarMoneda() {
+			var valorMoneda = [];
+			var diferenciaValor = [];
+			var response = [];
+            var nombreInput = document.getElementById('moneda').value;
+            var fechaInput = document.getElementById('valorAnterior').value;
+            var valorAnterior = parseFloat(document.getElementById('valorAnterior').value);
+
+            // Obtener la fecha actual
+            var fechaHoy = new Date();
+            var dia = ("0" + fechaHoy.getDate()).slice(-2);
+            var mes = ("0" + (fechaHoy.getMonth() + 1)).slice(-2);
+            var año = fechaHoy.getFullYear();
+
+            var valorActual = dia + "-" + mes + "-" + año;
+
+     
+            if (isNaN(valorAnterior)) {
+                alert('Por favor ingrese un valor numérico válido para Valor Anterior.');
+                return;
+            }
+
+			alert("paso 1");
+
+            $.ajax({
+                url: '/currency',
+                method: 'GET',
+				data: {codigo: nombreInput, fecha: fechaInput},
+				success: function(response) {
+					console.log(response);
+					alert("linea 69"+response.uf);
+					    // Verificar si la respuesta contiene el valor de la UF
+					    if (response && response.valor) {
+					        // Obtener el valor de la UF
+					        var valorUF = response.valor;
+					
+					        // Obtener la fecha de la UF
+					        var fechaUF = new Date(response.fecha);
+					
+					        // Obtener la fecha actual
+					        var fechaActual = new Date();
+					
+					        // Comparar la fecha de la UF con la fecha actual
+					        if (fechaUF.getTime() === fechaActual.getTime()) {
+					            // Las fechas son iguales
+					            console.log("El valor de la UF para la fecha ingresada es: " + valorUF);
+					        } else {
+					            // Las fechas son diferentes
+					            console.log("El valor de la UF no está disponible para la fecha ingresada.");
+					        }
+					    } else {
+					        // Manejar el caso en que la respuesta no tenga la estructura esperada
+					        console.error('La respuesta de la API no tiene la estructura esperada.');
+					    }
+					},
+					error: function() {
+					    // Manejar errores de la solicitud AJAX
+					    console.error('Error al obtener el valor de la UF desde la API.');
+					}
+
+				/*if (response && response.uf) {
+					        var valorUF = response.uf.valor;
+						alert("linea 72");
+				       valorMoneda = parseFloat(response.uf.valor);
+					  
+					   alert("Entra el If");
+				        if (!isNaN(valorMoneda)) {
+				            var diferenciaValor = valorMoneda - valorAnterior;
+				            var resultadoHTML = "<p>Valor Moneda Hoy: " + valorMoneda.toFixed(2) + "</p>" +
+				                                "<p>Diferencia en valor: " + diferenciaValor.toFixed(2) + "</p>";
+				            document.getElementById('resultado').innerHTML = resultadoHTML;
+				        } else {
+				            alert('El valor de la moneda para la fecha especificada no es válido.');
+				        }
+				    } else {
+				        alert('No se encontró información de la moneda para la fecha especificada.');
+				    }
+					
+					console.log("Valor Moneda:", valorMoneda);
+					console.log("Diferencia en valor:", diferenciaValor);
+
+                    // Calcular la diferencia en valor
+                    var diferenciaValor = valorMoneda - valorAnterior;
+
+                    // Mostrar los resultados en el HTML
+                    var resultadoHTML = "<p>Valor Moneda Hoy: " + valorMoneda.toFixed(2) + "</p>" +
+                                        "<p>Diferencia en valor: " + diferenciaValor.toFixed(2) + "</p>";
+                    document.getElementById('resultado').innerHTML = resultadoHTML;
+					console.log(response);
+                },
+                error: function() {
+                    alert('Error al obtener el valor de la moneda para el día de hoy.');*/
+        })}
+    </script>
+</body>
+</html>

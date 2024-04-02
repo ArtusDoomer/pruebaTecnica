@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de Moneda</title>
+    <link rel="stylesheet" href="estilos.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Consulta de Moneda por Año y Mes</h1>
+    <form id="yearMonthForm" action="/currency/year-month" method="get">
+        <label for="moneda">Seleccione una moneda:</label>
+        <select id="moneda" name="nombre">
+            <option value="uf">UF</option>
+            <option value="ivp">IVP</option>
+            <option value="dolar">Dólar</option>
+            <option value="dolar_intercambio">Dólar Intercambio</option>
+            <option value="euro">Euro</option>
+            <option value="ipc">IPC</option>
+            <option value="utm">UTM</option>
+            <option value="tpm">TPM</option>
+            <option value="bitcoin">Bitcoin</option>
+        </select>
+        <br>
+        <label for="year">Seleccione un año:</label>
+        <select id="year" name="year">
+        </select>
+        <br>
+        <label for="month">Seleccione un mes:</label>
+        <select id="month" name="month">
+            <!-- Opciones para seleccionar el mes -->
+            <option value="01">Enero</option>
+            <option value="02">Febrero</option>
+            <option value="03">Marzo</option>
+            <option value="04">Abril</option>
+            <option value="05">Mayo</option>
+            <option value="06">Junio</option>
+            <option value="07">Julio</option>
+            <option value="08">Agosto</option>
+            <option value="09">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+        </select>
+        <br>
+        <button type="button" onclick="consultarMoneda()">Consultar</button>
+    </form>
+    <div id="resultado"></div>
+    <script>
+        var selectYear = document.getElementById('year');
+
+        var currentYear = new Date().getFullYear();
+
+        for (var i = currentYear; i >= currentYear - 50; i--) {
+            var option = document.createElement('option');
+            option.value = i;
+            option.text = i;
+            selectYear.appendChild(option);
+        }
+
+        function consultarMoneda() {
+            var nombreSeleccionado = document.getElementById('moneda').value;
+            var añoSeleccionado = document.getElementById('year').value;
+
+            $.ajax({
+                url: '/year-month',
+                method: 'GET',
+                data: { nombre: nombreSeleccionado, year: añoSeleccionado },
+                success: function(response) {
+					
+					if (Array.isArray(response)) { 
+					      var datosAño = response.filter(function(data) {
+					          var fecha = new Date(data.fecha);
+					          return fecha.getFullYear() === parseInt(añoSeleccionado);
+					      });						  } else {
+						  			        console.error('El tipo de datos devuelto no es un array:', response);
+						  	    }
+						  			
+
+                    // Calcular la diferencia entre el primer y el último día del año
+                    var valorPrimerDia = datosAño[0].valor;
+                    var valorUltimoDia = datosAño[datosAño.length - 1].valor;
+                    var diferencia = valorUltimoDia - valorPrimerDia;
+
+                    // Calcular el porcentaje de variación
+                    var cambioPorcentaje = (diferencia / valorPrimerDia) * 100;
+
+                    // Calcular el promedio
+                    var suma = 0;
+                    datosAño.forEach(function(data) {
+                        suma += data.valor;
+                    });
+                    var promedio = suma / datosAño.length;
+
+                    // Calcular la moda (valor más frecuente)
+                    var frecuencia = {};
+                    var frecuenciaMaxima = 0;
+                    var moda;
+                    datosAño.forEach(function(data) {
+                        if (frecuencia[data.valor]) {
+                            frecuencia[data.valor]++;
+                        } else {
+                            frecuencia[data.valor] = 1;
+                        }
+                        if (frecuencia[data.valor] > frecuenciaMaxima) {
+                            frecuenciaMaxima = frecuencia[data.valor];
+                            moda = data.valor;
+                        }
+                    });
+
+                    // Mostrar los resultados en el HTML
+                    var resultadoHTML = "<p>Diferencia entre el primer y último día del año: " + diferencia.toFixed(2) + "</p>" +
+                        "<p>Porcentaje de variación: " + cambioPorcentaje.toFixed(2) + "%</p>" +
+                        "<p>Promedio del año: " + promedio.toFixed(2) + "</p>" +
+                        "<p>Moda del año: " + moda + "</p>";
+                    document.getElementById('resultado').innerHTML = resultadoHTML;
+                },
+                error: function() {
+                    alert('Error al obtener los datos para el año seleccionado.');
+                }
+            });			
+
+            return false; // Evita que el formulario se envíe automáticamente
+        }
+    </script>
+</body>
+</html>

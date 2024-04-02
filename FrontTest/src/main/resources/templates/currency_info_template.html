@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Información de Moneda</title>
+</head>
+<body>
+    <h1>Información de Moneda para el Año <span th:text="${year}"></span></h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Moneda</th>
+                <th>Promedio Mensual</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="entry : ${monthlyAverages}">
+                <td th:text="${entry.key}"></td>
+                <td th:text="${entry.value}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
